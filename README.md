@@ -14,7 +14,7 @@ python3 round_robin.py
 
 In the root folder of the project you find the `input_file.txt` file that can be changed to add or remove processes from the scheduler.
 
-## Authors
+## 🧑‍💻 Authors
 
 **Hugo Linhares**
 
