@@ -6,12 +6,13 @@ total_time = 0
 
 
 class Process:
-  def __init__(self, pid, duration, start_time, io_operations):
+  def __init__(self, pid, duration, arrival_time, io_operations):
     self.pid = pid
     self.duration = duration
-    self.start_time = start_time
-    self.io_operations = io_operations
     self.remaining_time = duration
+    self.arrival_time = arrival_time
+    self.waiting_time = 0
+    self.io_operations = io_operations
 
 
 def round_robin():
@@ -23,7 +24,7 @@ def round_robin():
       cpu_processes.append(processes[0])
       print_time(time, queue_processes, cpu_processes, "")
     else:
-      incoming_processes = list(filter(lambda p: p.start_time == time, processes))
+      incoming_processes = list(filter(lambda p: p.arrival_time == time, processes))
       current_process = cpu_processes[0]
       events = []
 
@@ -35,6 +36,7 @@ def round_robin():
         queue_processes.pop(0)
         current_quantum = 0
         events.append(f"ENCERRANDO <{current_process.pid}>")
+        update_waiting_time(queue_processes)
         print_time(time, queue_processes, cpu_processes, events)
         continue
 
@@ -61,6 +63,7 @@ def round_robin():
       if time == total_time:
         cpu_processes = []
 
+      update_waiting_time(queue_processes)
       print_time(time, queue_processes, cpu_processes, events)
 
 
@@ -95,6 +98,23 @@ def print_time(time, queue_processes=[], cpu_processes=[], events=[]):
     print("Acabaram os processos!")
 
 
+def update_waiting_time(queue_processes):
+  for process in queue_processes:
+    process.waiting_time += 1
+
+
+def print_waiting_time():
+  global processes
+  processes.sort(key=operator.attrgetter("pid"))
+  print("Tempos de espera:")
+  average_waiting_time = 0
+  for process in processes:
+    print(f"{process.pid}: {process.waiting_time}")
+    average_waiting_time += process.waiting_time
+  average_waiting_time /= len(processes)
+  print(f"Tempo de espera médio: {average_waiting_time}")
+
+
 def read_file(file_path):
   global processes, total_time
   file = open(file_path, "r")
@@ -102,7 +122,7 @@ def read_file(file_path):
     process_infos = line.replace("\n", "").split(" ")
     pid = process_infos[0]
     duration = process_infos[1]
-    start_time = process_infos[2]
+    arrival_time = process_infos[2]
     io_operations = []
     has_io_operations = len(process_infos) > 3
 
@@ -110,10 +130,10 @@ def read_file(file_path):
       for time in process_infos[3].split(","):
         io_operations.append(int(time))
 
-    process = Process(pid, int(duration), int(start_time), io_operations)
+    process = Process(pid, int(duration), int(arrival_time), io_operations)
     total_time += process.duration
     processes.append(process)
-  processes.sort(key=operator.attrgetter('start_time'))
+  processes.sort(key=operator.attrgetter("arrival_time"))
 
 
 def main():
@@ -124,6 +144,8 @@ def main():
   round_robin()
 
   print("=-=-= Término da simulação =-=-=")
+
+  print_waiting_time()
 
 
 if __name__ == "__main__":
