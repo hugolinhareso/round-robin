@@ -4,7 +4,7 @@ This is an implementation of the Round Robin algorithm for process scheduling ma
 
 ## 🚀 Usage
 
-Make sure you have [Python3+](https://www.python.org/downloads/) installed.
+Make sure you have [Python3+](https://www.python.org/downloads/), [Plotly](https://plotly.com/python/getting-started/#installation) and [Pandas](https://pandas.pydata.org/docs/getting_started/install.html#installing-from-pypi) installed.
 
 Just run the following command at the root of project:
 
@@ -31,6 +31,10 @@ In the root folder of the project you find the `input_file.txt` file that can be
 **Thales Lacerda**
 
 - Github: [@lacthales](https://github.com/lacthales)
+
+**Guilherme Cabelo**
+
+- Github: [@gcabelo](https://github.com/gcabelo)
 
 ## 📝 License
 
