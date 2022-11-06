@@ -1,6 +1,10 @@
 import operator
+import pandas as pd
+import plotly.figure_factory as ff
+
 
 processes = []
+gantt_data = []
 quantum = 4
 total_time = 0
 
@@ -15,10 +19,26 @@ class Process:
     self.io_operations = io_operations
 
 
+def append_to_gantt_data(pid, start_time, end_time):
+  gantt_data.append(
+    dict(Task=pid, Start=start_time, Finish=end_time)
+  )
+
+
+def show_gantt_chart():
+  data_frame = pd.DataFrame(gantt_data)
+  figure = ff.create_gantt(data_frame, bar_width = 0.4, show_colorbar=True, title="Processo na CPU x Tempo", index_col="Task")
+  figure.update_layout(xaxis_type="linear", autosize=False)
+  figure.update_yaxes(autorange="reversed")
+  figure.show()
+
+
 def round_robin():
   queue_processes = []
   cpu_processes = []
   current_quantum = 0
+  start_time = 0
+  end_time = 0
   for time in range(total_time + 1):
     if time == 0:
       cpu_processes.append(processes[0])
@@ -32,7 +52,10 @@ def round_robin():
         current_process.remaining_time -= 1
         current_quantum += 1
       elif len(queue_processes) > 0:
+        end_time = time
+        append_to_gantt_data(current_process.pid, start_time, end_time)
         cpu_processes = [queue_processes[0]]
+        start_time = time
         queue_processes.pop(0)
         current_quantum = 0
         events.append(f"ENCERRANDO <{current_process.pid}>")
@@ -41,7 +64,10 @@ def round_robin():
         continue
 
       if (current_process.duration - current_process.remaining_time) in current_process.io_operations and len(queue_processes) > 0:
+        end_time = time
+        append_to_gantt_data(current_process.pid, start_time, end_time)
         cpu_processes = [queue_processes[0]]
+        start_time = time
         queue_processes.pop(0)
         queue_processes.append(current_process)
         events.append(f"OPERAÇÃO I/O <{current_process.pid}>")
@@ -54,13 +80,18 @@ def round_robin():
 
       if current_quantum >= quantum and len(queue_processes) > 0:
         current_process = cpu_processes[0]
+        end_time = time
+        append_to_gantt_data(current_process.pid, start_time, end_time)
         cpu_processes = [queue_processes[0]]
+        start_time = time
         queue_processes.pop(0)
         queue_processes.append(current_process)
         events.append(f"FIM QUANTUM <{current_process.pid}>")
         current_quantum = 0
       
       if time == total_time:
+        end_time = time
+        append_to_gantt_data(current_process.pid, start_time, end_time)
         cpu_processes = []
 
       update_waiting_time(queue_processes)
@@ -146,6 +177,7 @@ def main():
   print("=-=-= Término da simulação =-=-=")
 
   print_waiting_time()
+  show_gantt_chart()
 
 
 if __name__ == "__main__":
