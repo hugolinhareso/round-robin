@@ -63,13 +63,14 @@ def round_robin():
         print_time(time, queue_processes, cpu_processes, events)
         continue
 
-      if (current_process.duration - current_process.remaining_time) in current_process.io_operations and len(queue_processes) > 0:
-        end_time = time
-        append_to_gantt_data(current_process.pid, start_time, end_time)
-        cpu_processes = [queue_processes[0]]
-        start_time = time
-        queue_processes.pop(0)
-        queue_processes.append(current_process)
+      if (current_process.duration - current_process.remaining_time) in current_process.io_operations and time != total_time:
+        if len(queue_processes) > 0:
+          end_time = time
+          append_to_gantt_data(current_process.pid, start_time, end_time)
+          cpu_processes = [queue_processes[0]]
+          start_time = time
+          queue_processes.pop(0)
+          queue_processes.append(current_process)
         events.append(f"OPERAÇÃO I/O <{current_process.pid}>")
         current_quantum = 0
 
